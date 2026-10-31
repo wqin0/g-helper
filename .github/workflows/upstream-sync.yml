@@ -3,9 +3,9 @@ name: Upstream sync
 
 on:
   schedule:
-    # Every 3 hours. Upstream releases ~every 5 days, between 07:00 and 21:00 UTC, never twice in a day.
-    # :17 avoids the top of the hour, when GitHub's scheduler is busiest and delays or drops runs
-    - cron: '17 */3 * * *'
+    # Daily, after upstream's release window: it releases ~every 5 days, between 07:00 and 21:00 UTC,
+    # never twice in a day. :17 avoids the top of the hour, when GitHub's scheduler delays or drops runs
+    - cron: '17 21 * * *'
   workflow_dispatch:
     inputs:
       force_release:
