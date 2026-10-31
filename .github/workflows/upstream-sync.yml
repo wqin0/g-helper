@@ -52,7 +52,6 @@ jobs:
     permissions:
       contents: write
       issues: write
-      id-token: write # short-lived OpenCode key via OIDC, minted only when the agent is needed
     steps:
       - run: git config --global core.autocrlf false
       - uses: actions/checkout@v7
@@ -67,8 +66,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           SYNC_TOKEN: ${{ secrets.SYNC_TOKEN }}
-          OPENCODE_CLIENT_ID: ${{ secrets.OPENCODE_CLIENT_ID }}
-          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }} # optional fallback, a plain key
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
           SYNC_MODEL: ${{ vars.SYNC_MODEL }} # optional repo variable, defaults to opencode-go/deepseek-v4.1-flash
           FORCE_RELEASE: ${{ inputs.force_release || false }}
           DRY_RUN: ${{ inputs.dry_run || false }}
