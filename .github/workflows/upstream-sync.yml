@@ -63,6 +63,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           SYNC_TOKEN: ${{ secrets.SYNC_TOKEN }}
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+          SYNC_MODEL: ${{ vars.SYNC_MODEL }} # optional repo variable, defaults to opencode-go/deepseek-v4.1-flash
           FORCE_RELEASE: ${{ inputs.force_release || false }}
           DRY_RUN: ${{ inputs.dry_run || false }}
           TEST_AGENT: ${{ inputs.test_agent || false }}
