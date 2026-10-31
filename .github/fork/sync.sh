@@ -5,7 +5,7 @@
 #   sync.sh run     merge upstream, let the agent fix conflicts or build breaks, verify, push, release
 #
 # Env: GH_TOKEN (issues, releases), SYNC_TOKEN (push; needs workflow permission since upstream edits workflows),
-#      OPENCODE_API_KEY (agent), MANUAL, DRY_RUN, FORCE_RELEASE, TEST_AGENT (true|false)
+#      OPENCODE_CLIENT_ID (agent sign-in via GitHub OIDC) or OPENCODE_API_KEY, MANUAL, DRY_RUN, FORCE_RELEASE, TEST_AGENT (true|false)
 set -euo pipefail
 
 UPSTREAM=seerge/g-helper
@@ -65,12 +65,30 @@ missing_required() {
   done < "$DIR/required.txt"
 }
 
+# OPENCODE_API_KEY secret if set, otherwise a short-lived key exchanged for this run's GitHub OIDC token
+opencode_key() {
+  if [ -n "${OPENCODE_API_KEY:-}" ]; then echo "$OPENCODE_API_KEY"; return 0; fi
+  [ -n "${OPENCODE_CLIENT_ID:-}" ] && [ -n "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ] || return 1
+  local oidc
+  oidc=$(curl -sSf --oauth2-bearer "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+    "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://opencode.ai/console" | jq -r .value) || return 1
+  curl -sSf https://opencode.ai/console/auth/oauth/token \
+    -d grant_type=urn:ietf:params:oauth:grant-type:token-exchange \
+    -d subject_token_type=urn:ietf:params:oauth:token-type:jwt \
+    -d "client_id=$OPENCODE_CLIENT_ID" -d "subject_token=$oidc" | jq -r .access_token
+}
+
 agent() {
-  [ -n "${OPENCODE_API_KEY:-}" ] || fail "Needs the agent, but the OPENCODE_API_KEY secret isn't set."$'\n\n'"$1"
+  local key
+  key=$(opencode_key) && [ -n "$key" ] && [ "$key" != null ] ||
+    fail "Needs the agent, but couldn't get an OpenCode key (OIDC sign-in failed, or neither OPENCODE_CLIENT_ID nor OPENCODE_API_KEY is set)."$'\n\n'"$1"
+  echo "::add-mask::$key"
   command -v opencode >/dev/null || npm install -g --no-fund --no-audit --loglevel=error "opencode-ai@$OPENCODE_VERSION"
   echo "::group::Agent ($MODEL)"
-  # Push and GitHub tokens stay out of the agent's environment
-  env -u SYNC_TOKEN -u GH_TOKEN -u GITHUB_TOKEN \
+  # Push, GitHub and token-minting credentials stay out of the agent's environment
+  env -u SYNC_TOKEN -u GH_TOKEN -u GITHUB_TOKEN -u OPENCODE_CLIENT_ID \
+    -u ACTIONS_ID_TOKEN_REQUEST_TOKEN -u ACTIONS_ID_TOKEN_REQUEST_URL -u ACTIONS_RUNTIME_TOKEN \
+    OPENCODE_API_KEY="$key" \
     OPENCODE_CONFIG_CONTENT='{"autoupdate":false,"permission":{"webfetch":"deny","websearch":"deny","external_directory":"deny"}}' \
     timeout 1800 opencode run --auto -m "$MODEL" "$(cat "$DIR/agent-prompt.md")"$'\n\n## Task\n\n'"$1" || echo "Agent exited with $?"
   echo "::endgroup::"
