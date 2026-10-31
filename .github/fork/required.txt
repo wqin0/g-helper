@@ -1,0 +1,21 @@
+# Fork changes that must survive every upstream merge, checked by sync.sh after each merge.
+# One per line: <file><TAB><exact text that must be present>. Update this when the fork changes.
+app/Gpu/GPUModeControl.cs	public static bool SetIGpu(bool enabled)
+app/Gpu/GPUModeControl.cs	public static void SyncIGpu()
+app/Gpu/GPUModeControl.cs	if (!SetIGpu(true))
+app/Gpu/GPUModeControl.cs	if (status == 1 && AppConfig.IsDisableIGpuUltimate()) SetIGpu(false);
+app/Helpers/DeviceHelper.cs	public static string? GetIGpuId()
+app/Helpers/DeviceHelper.cs	public static bool SetDeviceEnabled(string id, bool enabled)
+app/Helpers/DeviceHelper.cs	!(problem == CM_PROB_DISABLED && id == iGpu)
+app/Input/InputDispatcher.cs	GPUModeControl.SetIGpu(true);
+app/Program.cs	GPUModeControl.SyncIGpu();
+app/AppConfig.cs	return Is("disable_igpu_ultimate");
+app/Extra.cs	checkIGpuUltimate.CheckedChanged += CheckIGpuUltimate_CheckedChanged;
+app/Extra.Designer.cs	panelSettings.Controls.Add(checkIGpuUltimate);
+app/Properties/Strings.resx	<data name="DisableIGpuUltimate" xml:space="preserve">
+app/Properties/Strings.resx	<data name="AlertIGpuEnableFailed" xml:space="preserve">
+app/Properties/Strings.Designer.cs	internal static string DisableIGpuUltimate {
+app/Properties/Strings.Designer.cs	internal static string AlertIGpuEnableFailed {
+app/AutoUpdate/AutoUpdateControl.cs	https://api.github.com/repos/wqin0/g-helper/releases/latest
+app/AutoUpdate/AutoUpdateControl.cs	https://github.com/wqin0/g-helper/releases"
+README.md	# G-Helper (fork with iGPU control in Ultimate Mode)

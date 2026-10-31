@@ -1,0 +1,68 @@
+# Fork-only: merges seerge/g-helper into this fork and rebuilds each upstream release. Logic is in .github/fork/sync.sh
+name: Upstream sync
+
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *' # every 15 minutes, off the top of the hour when GitHub's scheduler is busiest
+  workflow_dispatch:
+    inputs:
+      force_release:
+        description: Publish a release even if upstream hasn't released
+        type: boolean
+        default: false
+      dry_run:
+        description: Merge and build, but don't push or release
+        type: boolean
+        default: false
+      test_agent:
+        description: Break the build on purpose to check the agent can fix it (always a dry run)
+        type: boolean
+        default: false
+
+concurrency:
+  group: upstream-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      work: ${{ steps.check.outputs.work }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/fork
+          persist-credentials: false
+      - id: check
+        run: bash .github/fork/sync.sh check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MANUAL: ${{ github.event_name == 'workflow_dispatch' }}
+
+  sync:
+    needs: check
+    if: needs.check.outputs.work == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - run: git config --global core.autocrlf false
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+      - shell: bash
+        run: bash .github/fork/sync.sh run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SYNC_TOKEN: ${{ secrets.SYNC_TOKEN }}
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+          FORCE_RELEASE: ${{ inputs.force_release || false }}
+          DRY_RUN: ${{ inputs.dry_run || false }}
+          TEST_AGENT: ${{ inputs.test_agent || false }}
