@@ -30,8 +30,8 @@ The built-in updater in these builds checks this fork's releases. Builds are not
 
 ## How builds are made
 
-- Every 15 minutes a GitHub Actions workflow checks the original repository and merges new commits.
-- Each upstream release is rebuilt with this fork's changes, usually within about 30 minutes.
+- Every 3 hours a GitHub Actions workflow checks the original repository and merges new commits.
+- Each upstream release is rebuilt with this fork's changes, usually within 3 hours.
 - Versions are the upstream version plus a fork build number (`0.291.1`, `0.291.2`, ...).
 - Merge conflicts and build breaks are handed to an AI coding agent ([OpenCode](https://opencode.ai)).
 - A release is only published if the build passes and the fork's changes are confirmed still present. Otherwise syncing pauses and an issue is opened.
