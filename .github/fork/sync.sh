@@ -132,7 +132,8 @@ publish() {
 push() {
   if [ "$DRY_RUN" = true ]; then echo "Dry run: not pushing $(git rev-parse --short HEAD)"; return 0; fi
   git fetch --quiet origin main
-  if [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" ]; then echo "Nothing to push"; return 0; fi
+  # Also covers main having moved on during the run with this commit already in it
+  if git merge-base --is-ancestor HEAD origin/main; then echo "Nothing to push"; return 0; fi
   [ -n "${SYNC_TOKEN:-}" ] || fail "The SYNC_TOKEN secret isn't set, so the merged upstream changes can't be pushed."
   git push --quiet "https://x-access-token:$SYNC_TOKEN@github.com/$FORK.git" HEAD:main
 }
