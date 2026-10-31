@@ -69,13 +69,17 @@ missing_required() {
 opencode_key() {
   if [ -n "${OPENCODE_API_KEY:-}" ]; then echo "$OPENCODE_API_KEY"; return 0; fi
   [ -n "${OPENCODE_CLIENT_ID:-}" ] && [ -n "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ] || return 1
-  local oidc
+  local oidc res
   oidc=$(curl -sSf --oauth2-bearer "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-    "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://opencode.ai/console" | jq -r .value) || return 1
-  curl -sSf https://opencode.ai/console/auth/oauth/token \
+    "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://opencode.ai/console" | jq -r .value) ||
+    { echo "GitHub OIDC token request failed" >&2; return 1; }
+  res=$(curl -sS https://opencode.ai/console/auth/oauth/token \
     -d grant_type=urn:ietf:params:oauth:grant-type:token-exchange \
     -d subject_token_type=urn:ietf:params:oauth:token-type:jwt \
-    -d "client_id=$OPENCODE_CLIENT_ID" -d "subject_token=$oidc" | jq -r .access_token
+    -d "client_id=$OPENCODE_CLIENT_ID" -d "subject_token=$oidc") || return 1
+  # Error responses carry no token, so they're safe to log
+  jq -er .access_token <<< "$res" 2> /dev/null ||
+    { echo "OpenCode token exchange failed: $(head -c 300 <<< "$res")" >&2; return 1; }
 }
 
 agent() {
