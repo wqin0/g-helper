@@ -120,6 +120,7 @@ namespace GHelper
             checkUSBC = new CheckBox();
             checkGpuApps = new CheckBox();
             checkNVPlatform = new CheckBox();
+            checkIGpuUltimate = new CheckBox();
             checkStatusLed = new CheckBox();
             checkNumberPad = new CheckBox();
             checkAspm = new CheckBox();
@@ -1209,6 +1210,7 @@ namespace GHelper
             panelSettings.Controls.Add(checkKeystoneSound);
             panelSettings.Controls.Add(checkBootSound);
             panelSettings.Controls.Add(checkUSBC);
+            panelSettings.Controls.Add(checkIGpuUltimate);
             panelSettings.Controls.Add(checkGpuApps);
             panelSettings.Controls.Add(checkNVPlatform);
             panelSettings.Controls.Add(checkNumberPad);
@@ -1325,6 +1327,20 @@ namespace GHelper
             checkGpuApps.TabIndex = 3;
             checkGpuApps.Text = "Stop all apps using GPU when switching to Eco";
             checkGpuApps.UseVisualStyleBackColor = true;
+            //
+            // checkIGpuUltimate
+            //
+            checkIGpuUltimate.AutoSize = true;
+            checkIGpuUltimate.Dock = DockStyle.Top;
+            checkIGpuUltimate.Location = new Point(21, 215);
+            checkIGpuUltimate.Margin = new Padding(5, 3, 5, 3);
+            checkIGpuUltimate.Name = "checkIGpuUltimate";
+            checkIGpuUltimate.Padding = new Padding(3);
+            checkIGpuUltimate.Size = new Size(917, 42);
+            checkIGpuUltimate.TabIndex = 4;
+            checkIGpuUltimate.Text = "Disable iGPU in Ultimate Mode";
+            checkIGpuUltimate.UseVisualStyleBackColor = true;
+            checkIGpuUltimate.Visible = false;
             //
             // checkNVPlatform
             // 
@@ -1890,6 +1906,7 @@ namespace GHelper
         private CheckBox checkBatteryLid;
         private CheckBox checkBatteryBar;
         private CheckBox checkNVPlatform;
+        private CheckBox checkIGpuUltimate;
         private Panel panelOptimalBrightness;
         private RComboBox comboOptimalBrightness;
         private PictureBox pictureOptimalBrightness;

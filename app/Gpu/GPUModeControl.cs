@@ -99,6 +99,15 @@ namespace GHelper.Gpu
                 DialogResult dialogResult = settings.ShowMessage(Properties.Strings.AlertUltimateOff, Properties.Strings.AlertUltimateTitle, MessageBoxButtons.YesNo);
                 if (dialogResult == DialogResult.Yes)
                 {
+                    // Internal display runs from the iGPU outside of Ultimate, booting with it disabled leaves the screen blank.
+                    // Not gated by the option, so it still protects if the option was turned off while iGPU was disabled
+                    if (!SetIGpu(true))
+                    {
+                        settings.ShowMessage(Properties.Strings.AlertIGpuEnableFailed, Properties.Strings.AlertUltimateTitle);
+                        settings.VisualiseGPUMode();
+                        return;
+                    }
+
                     status = Program.acpi.DeviceSet(AsusACPI.GPUMux, 1, "GPUMux");
                     restart = true;
                     changed = true;
@@ -128,6 +137,7 @@ namespace GHelper.Gpu
                     }
 
                     status = Program.acpi.DeviceSet(AsusACPI.GPUMux, 0, "GPUMux");
+                    if (status == 1 && AppConfig.IsDisableIGpuUltimate()) SetIGpu(false);
                     restart = true;
                     changed = true;
                 }
@@ -359,6 +369,32 @@ namespace GHelper.Gpu
                 HardwareControl.GpuControl.KillGPUApps();
             }
         }
+
+        public static bool SetIGpu(bool enabled)
+        {
+            string? id = DeviceHelper.GetIGpuId();
+            if (id is null)
+            {
+                Logger.WriteLine("iGPU not found");
+                return enabled; // nothing to re-enable
+            }
+
+            bool result = DeviceHelper.SetDeviceEnabled(id, enabled);
+            Logger.WriteLine($"iGPU {(enabled ? "enable" : "disable")} {id}: {(result ? "OK" : "Failed")}");
+            return result;
+        }
+
+        // Matches iGPU state to current MUX mode, e.g. after the option was toggled or MUX was switched outside of G-Helper
+        public static void SyncIGpu() => Task.Run(() =>
+        {
+            if (!AppConfig.IsDisableIGpuUltimate()) return;
+
+            int mux = Program.acpi.DeviceGet(AsusACPI.GPUMux);
+            if (mux < 0) return;
+
+            SetIGpu(mux != 0);
+            CheckGpuError();
+        });
 
         public void CaptureNvBootState()
         {

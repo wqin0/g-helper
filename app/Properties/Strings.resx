@@ -144,6 +144,17 @@
   <data name="AlertUltimateOn" xml:space="preserve">
     <value>Ultimate Mode requires restart</value>
   </data>
+  <data name="DisableIGpuUltimate" xml:space="preserve">
+    <value>Disable iGPU in Ultimate Mode</value>
+  </data>
+  <data name="DisableIGpuUltimateTooltip" xml:space="preserve">
+    <value>Disables the integrated GPU when switching to Ultimate Mode
+and re-enables it before switching back. Requires administrator rights</value>
+  </data>
+  <data name="AlertIGpuEnableFailed" xml:space="preserve">
+    <value>Can't re-enable the integrated GPU, so Ultimate Mode stays on to keep the built-in display working.
+Run G-Helper as administrator and try again</value>
+  </data>
   <data name="AlertUltimateTitle" xml:space="preserve">
     <value>Reboot now?</value>
   </data>

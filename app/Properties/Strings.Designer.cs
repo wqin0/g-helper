@@ -124,6 +124,15 @@ namespace GHelper.Properties {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Can't re-enable the integrated GPU, so Ultimate Mode stays on to keep the built-in display working.
+        /// </summary>
+        internal static string AlertIGpuEnableFailed {
+            get {
+                return ResourceManager.GetString("AlertIGpuEnableFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Switching off Ultimate Mode requires restart.
         /// </summary>
         internal static string AlertUltimateOff {
@@ -840,6 +849,24 @@ namespace GHelper.Properties {
         internal static string DisableOverdrive {
             get {
                 return ResourceManager.GetString("DisableOverdrive", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Disable iGPU in Ultimate Mode.
+        /// </summary>
+        internal static string DisableIGpuUltimate {
+            get {
+                return ResourceManager.GetString("DisableIGpuUltimate", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Disables the integrated GPU when switching to Ultimate Mode.
+        /// </summary>
+        internal static string DisableIGpuUltimateTooltip {
+            get {
+                return ResourceManager.GetString("DisableIGpuUltimateTooltip", resourceCulture);
             }
         }
 

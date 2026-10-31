@@ -299,7 +299,11 @@ namespace GHelper
         {
             int skipDelay = wakeup ? 10000 : 3000;
 
-            if (init) gpuControl.CaptureNvBootState();
+            if (init)
+            {
+                gpuControl.CaptureNvBootState();
+                GPUModeControl.SyncIGpu();
+            }
 
             lock (autoLock)
             {

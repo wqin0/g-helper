@@ -180,6 +180,7 @@ namespace GHelper
             checkAspm.Text = Properties.Strings.DisablePCIeASPM;
             checkStandbyNetworking.Text = Properties.Strings.DisableStandbyNetworking;
             checkNVPlatform.Text = Properties.Strings.StopStartNVServices;
+            checkIGpuUltimate.Text = Properties.Strings.DisableIGpuUltimate;
             labelHibernateAfter.Text = Properties.Strings.HibernateAfter;
             numericHibernateAfter.OffText = Properties.Strings.Off;
             numericBacklightTime.OffText = Properties.Strings.Off;
@@ -491,6 +492,10 @@ namespace GHelper
             checkNVPlatform.Checked = AppConfig.IsNVPlatform();
             checkNVPlatform.CheckedChanged += CheckNVPlatform_CheckedChanged;
 
+            checkIGpuUltimate.Visible = !AppConfig.IsAlly() && Program.acpi.IsSupported(AsusACPI.GPUMux) && DeviceHelper.GetIGpuId() is not null;
+            checkIGpuUltimate.Checked = AppConfig.IsDisableIGpuUltimate();
+            checkIGpuUltimate.CheckedChanged += CheckIGpuUltimate_CheckedChanged;
+
             checkAspm.Checked = AppConfig.IsAutoASPM();
             checkAspm.CheckedChanged += CheckAspm_CheckedChanged;
 
@@ -503,6 +508,7 @@ namespace GHelper
 
             toolTip.SetToolTip(checkAutoToggleClamshellMode, Properties.Strings.ClamshellModeTooltip);
             toolTip.SetToolTip(checkNVPlatform, Properties.Strings.NVPlatformTooltip);
+            toolTip.SetToolTip(checkIGpuUltimate, Properties.Strings.DisableIGpuUltimateTooltip);
             toolTip.SetToolTip(checkAspm, Properties.Strings.DisablePCIeASPMTooltip);
             toolTip.SetToolTip(checkStandbyNetworking, Properties.Strings.DisableStandbyNetworkingTooltip);
 
@@ -535,6 +541,22 @@ namespace GHelper
         private void CheckNVPlatform_CheckedChanged(object? sender, EventArgs e)
         {
             AppConfig.Set("nv_platform", (checkNVPlatform.Checked ? 1 : 0));
+        }
+
+        private void CheckIGpuUltimate_CheckedChanged(object? sender, EventArgs e)
+        {
+            bool enabled = checkIGpuUltimate.Checked;
+            AppConfig.Set("disable_igpu_ultimate", (enabled ? 1 : 0));
+
+            if (!enabled)
+            {
+                // Don't leave iGPU disabled once the option is off
+                Task.Run(() => { GPUModeControl.SetIGpu(true); GPUModeControl.CheckGpuError(); });
+                return;
+            }
+
+            if (ProcessHelper.IsUserAdministrator()) GPUModeControl.SyncIGpu();
+            else ProcessHelper.RunAsAdmin(); // option gets applied on elevated start
         }
 
         private void OptimalBrightness_Changed(object? sender, EventArgs e)
