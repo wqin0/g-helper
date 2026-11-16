@@ -1141,6 +1141,7 @@ namespace GHelper.Input
                 Aura.ApplyPower();
                 SetBacklightAuto();
                 Aura.ApplyAura();
+                Aura.ApplyWheel();
             } else
             {
                 Logger.WriteLine("Skipping Aura");
